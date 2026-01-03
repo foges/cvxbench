@@ -23,6 +23,10 @@ def get_loader(suite_name: str) -> BenchmarkLoader:
         from cvxbench.loaders.maros_meszaros import MarosMeszarosLoader
 
         return MarosMeszarosLoader()
+    elif suite_name == "smp":
+        from cvxbench.loaders.smp import SMPLoader
+
+        return SMPLoader()
     else:
         msg = f"Unknown suite: {suite_name}"
         raise ValueError(msg)

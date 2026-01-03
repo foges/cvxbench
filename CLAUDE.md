@@ -30,7 +30,8 @@ src/cvxbench/
 ├── results.py       # Result aggregation (shifted geometric mean), rich display
 └── loaders/
     ├── base.py      # BenchmarkProblem (conic form), BenchmarkLoader ABC
-    └── maros_meszaros.py  # QPS/SIF parser for Maros-Mészáros (138 QPs)
+    ├── maros_meszaros.py  # QPS/SIF parser for Maros-Mészáros (138 QPs)
+    └── smp.py       # YAML+MatrixMarket parser for SMP/NASOQ (527+ QPs)
 ```
 
 ## Problem Representation
@@ -54,14 +55,17 @@ Matrices P, A are scipy sparse CSC. Cones stored as `list[tuple[str, int]]`.
 3. Return `BenchmarkProblem` with problem converted to conic form
 4. Register in `runner.py:get_loader()` and `cli.py:Suite` enum
 
-## Planned Suites
+## Available Suites
 
-See `convex_benchmarks_continuous.md` and `convex_benchmarks_mip_integer.md` for full list:
-- SMP/NASOQ (1515 QPs) - YAML with MatrixMarket
-- QPLIB continuous (~134 QPs)
-- SDPLIB (92 SDPs)
-- CBLIB continuous (~41 conic)
-- MIPLIB (MIP)
+| Suite | Problems | Status | Description |
+|-------|----------|--------|-------------|
+| maros | 138 | ✅ | Maros-Mészáros classic QP test set |
+| smp | 527+ | ✅ | SMP/NASOQ graphics/simulation QPs |
+| qplib | ~134 | Planned | QPLIB continuous subset |
+| sdplib | 92 | Planned | SDP problems |
+| cblib | ~41 | Planned | Conic problems |
+
+See `convex_benchmarks_continuous.md` and `convex_benchmarks_mip_integer.md` for full list.
 
 ## Available Solvers
 

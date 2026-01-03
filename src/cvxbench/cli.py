@@ -28,7 +28,7 @@ class Suite(str, Enum):
     """Available benchmark suites."""
 
     maros = "maros"
-    # smp = "smp"
+    smp = "smp"
     # qplib = "qplib"
     # miplib = "miplib"
 
@@ -231,6 +231,14 @@ def _download_suite(config: DownloadConfig) -> None:
                     console.print(f"[yellow]Warning: Failed to download {name}: {e}[/yellow]")
                 progress.update(task, advance=1)
 
+        console.print(f"[green]Downloaded {len(problems)} problems to {loader.cache_dir}[/green]")
+    elif suite_name == "smp":
+        from cvxbench.loaders.smp import SMPLoader
+
+        loader = SMPLoader()
+        console.print("Downloading SMP problems from Google Drive...")
+        loader.ensure_downloaded()
+        problems = loader.list_problems()
         console.print(f"[green]Downloaded {len(problems)} problems to {loader.cache_dir}[/green]")
     else:
         console.print(f"[red]Suite {suite_name} not yet implemented[/red]")
