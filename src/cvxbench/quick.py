@@ -83,14 +83,25 @@ def run_tier(
     loader = get_loader(suite)
 
     # Get problem list for tier
-    if tier == 5 or TIERS[tier][0] is None:
-        # Load all small problems
+    # TIERS only applies to maros suite; other suites use size-based selection
+    if suite != "maros" or tier == 5 or TIERS[tier][0] is None:
+        # Load problems by size threshold based on tier
+        size_limits = {1: 50, 2: 100, 3: 200, 4: 500, 5: 1000}
+        max_size = size_limits.get(tier, 500)
         problems = []
         for name in loader.list_problems():
-            p = loader.load_problem(name)
-            if p.n_vars < 500:
-                problems.append(name)
+            try:
+                p = loader.load_problem(name)
+                if p.n_vars <= max_size:
+                    problems.append(name)
+            except Exception:
+                continue
         problems = sorted(problems)
+        # Limit count for lower tiers
+        count_limits = {1: 5, 2: 10, 3: 20, 4: 35, 5: None}
+        limit = count_limits.get(tier)
+        if limit and len(problems) > limit:
+            problems = problems[:limit]
     else:
         problems = TIERS[tier]
 
