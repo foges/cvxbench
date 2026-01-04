@@ -28,10 +28,30 @@ class SolveResult:
     gap: float | None
     error_message: str | None = None
 
+    # Validation fields (populated when validation is enabled)
+    primal_residual: float | None = None
+    dual_residual: float | None = None
+    constraint_violation: float | None = None
+    obj_error: float | None = None  # Error vs reference solution
+    is_validated: bool = False
+
     @property
     def is_success(self) -> bool:
         """Check if the solve was successful."""
         return self.status in ("optimal", "optimal_inaccurate")
+
+    @property
+    def is_accurate(self) -> bool:
+        """Check if solution passes validation (if validated)."""
+        if not self.is_validated:
+            return self.is_success
+        # Check feasibility
+        tol = 1e-6
+        if self.primal_residual is not None and self.primal_residual > tol:
+            return False
+        if self.constraint_violation is not None and self.constraint_violation > tol:
+            return False
+        return self.is_success
 
 
 def shifted_geometric_mean(times: list[float], shift: float = 1.0) -> float:
@@ -97,6 +117,25 @@ def compute_summary_stats(results: list[SolveResult], solver: str) -> dict:
         stats["max_time"] = float("nan")
         stats["geom_mean"] = float("nan")
 
+    # Validation statistics
+    validated = [r for r in successes if r.is_validated]
+    if validated:
+        primal_residuals = [r.primal_residual for r in validated if r.primal_residual is not None]
+        constraint_viols = [r.constraint_violation for r in validated if r.constraint_violation is not None]
+
+        stats["validated"] = len(validated)
+        stats["max_primal_res"] = max(primal_residuals) if primal_residuals else None
+        stats["max_constraint_viol"] = max(constraint_viols) if constraint_viols else None
+
+        # Count accurate solutions (pass validation)
+        accurate = [r for r in validated if r.is_accurate]
+        stats["accurate"] = len(accurate)
+    else:
+        stats["validated"] = 0
+        stats["max_primal_res"] = None
+        stats["max_constraint_viol"] = None
+        stats["accurate"] = None
+
     return stats
 
 
@@ -107,7 +146,6 @@ def display_summary(results: list[SolveResult], console: Console) -> None:
         results: List of all solve results.
         console: Rich console for output.
     """
-    from rich.panel import Panel
     from rich.table import Table
 
     if not results:
@@ -117,6 +155,9 @@ def display_summary(results: list[SolveResult], console: Console) -> None:
     # Get unique solvers
     solvers = sorted(set(r.solver for r in results))
 
+    # Check if any results have validation
+    has_validation = any(r.is_validated for r in results)
+
     # Summary table
     summary_table = Table(title="Benchmark Summary", show_header=True, header_style="bold cyan")
     summary_table.add_column("Solver", style="cyan")
@@ -125,8 +166,11 @@ def display_summary(results: list[SolveResult], console: Console) -> None:
     summary_table.add_column("Rate", justify="right")
     summary_table.add_column("Median (s)", justify="right")
     summary_table.add_column("Geom Mean (s)", justify="right")
-    summary_table.add_column("Min (s)", justify="right")
-    summary_table.add_column("Max (s)", justify="right")
+
+    # Add validation columns if validation was performed
+    if has_validation:
+        summary_table.add_column("Accurate", justify="right")
+        summary_table.add_column("MaxRes", justify="right")
 
     for solver in solvers:
         stats = compute_summary_stats(results, solver)
@@ -141,16 +185,41 @@ def display_summary(results: list[SolveResult], console: Console) -> None:
         else:
             rate_style = "red"
 
-        summary_table.add_row(
+        row = [
             solver,
             str(stats["success"]),
             str(stats["failure"]),
             f"[{rate_style}]{rate_str}[/{rate_style}]",
-            f"{stats['median_time']:.4f}" if not math.isnan(stats["median_time"]) else "—",
-            f"{stats['geom_mean']:.4f}" if not math.isnan(stats["geom_mean"]) else "—",
-            f"{stats['min_time']:.4f}" if not math.isnan(stats["min_time"]) else "—",
-            f"{stats['max_time']:.4f}" if not math.isnan(stats["max_time"]) else "—",
-        )
+            f"{stats['median_time']:.4f}" if not math.isnan(stats["median_time"]) else "-",
+            f"{stats['geom_mean']:.4f}" if not math.isnan(stats["geom_mean"]) else "-",
+        ]
+
+        if has_validation:
+            # Accurate count
+            if stats.get("accurate") is not None:
+                acc_str = f"{stats['accurate']}/{stats['validated']}"
+                if stats["accurate"] == stats["validated"]:
+                    acc_str = f"[green]{acc_str}[/green]"
+                elif stats["accurate"] < stats["validated"]:
+                    acc_str = f"[yellow]{acc_str}[/yellow]"
+                row.append(acc_str)
+            else:
+                row.append("-")
+
+            # Max residual
+            max_res = stats.get("max_primal_res")
+            if max_res is not None:
+                if max_res < 1e-8:
+                    res_str = f"[green]{max_res:.0e}[/green]"
+                elif max_res < 1e-4:
+                    res_str = f"[yellow]{max_res:.0e}[/yellow]"
+                else:
+                    res_str = f"[red]{max_res:.0e}[/red]"
+                row.append(res_str)
+            else:
+                row.append("-")
+
+        summary_table.add_row(*row)
 
     console.print()
     console.print(summary_table)

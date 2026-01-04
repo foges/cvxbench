@@ -59,6 +59,7 @@ def run_benchmarks(
     timeout: int = 300,
     verbose: bool = False,
     seed: int | None = None,
+    validate: bool = False,
 ) -> list[SolveResult]:
     """Run benchmarks and collect results.
 
@@ -70,6 +71,7 @@ def run_benchmarks(
         timeout: Timeout per problem in seconds.
         verbose: Whether to print solver output.
         seed: Random seed for reproducible sampling.
+        validate: Whether to validate solutions (compute residuals).
 
     Returns:
         List of SolveResult objects.
@@ -108,6 +110,7 @@ def run_benchmarks(
                         run_index=run_idx,
                         timeout=timeout,
                         verbose=verbose,
+                        validate=validate,
                     )
                     results.append(result)
 
@@ -122,6 +125,7 @@ def run_single(
     run_index: int,
     timeout: int,
     verbose: bool,
+    validate: bool = False,
 ) -> SolveResult:
     """Run a single benchmark problem with a single solver.
 
@@ -131,6 +135,7 @@ def run_single(
         run_index: Index of this run (for repeated runs).
         timeout: Timeout in seconds.
         verbose: Whether to print solver output.
+        validate: Whether to validate solutions (compute residuals).
 
     Returns:
         SolveResult with timing and solution information.
@@ -188,6 +193,45 @@ def run_single(
         except Exception:
             pass
 
+        # Validation (if requested and solution available)
+        primal_residual = None
+        dual_residual = None
+        constraint_violation = None
+        obj_error = None
+        is_validated = False
+
+        if validate and x.value is not None:
+            from cvxbench.validation import validate_solution
+
+            x_val = np.array(x.value).flatten()
+
+            # Try to get dual variables from constraints
+            y_val = None
+            try:
+                if cvxpy_problem.constraints:
+                    duals = []
+                    for c in cvxpy_problem.constraints:
+                        if c.dual_value is not None:
+                            d = np.array(c.dual_value).flatten()
+                            duals.append(d)
+                    if duals:
+                        y_val = np.concatenate(duals)
+            except Exception:
+                pass
+
+            validation = validate_solution(
+                problem,
+                x_val,
+                y=y_val,
+                reference_obj=problem.known_optimal,
+            )
+
+            primal_residual = validation.primal_residual
+            dual_residual = validation.dual_residual
+            constraint_violation = validation.constraint_violation
+            obj_error = validation.obj_error
+            is_validated = True
+
         return SolveResult(
             problem=problem.name,
             source=problem.source,
@@ -200,6 +244,11 @@ def run_single(
             dual_obj=None,
             gap=None,
             error_message=None,
+            primal_residual=primal_residual,
+            dual_residual=dual_residual,
+            constraint_violation=constraint_violation,
+            obj_error=obj_error,
+            is_validated=is_validated,
         )
 
     except Exception as e:
