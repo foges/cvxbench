@@ -118,7 +118,7 @@ class QuickConfig:
     """Tier level: 1(~10s), 2(~30s), 3(~2min), 4(~5min), 5(~15min)."""
 
     solvers: Annotated[list[Solver] | None, tyro.conf.arg(aliases=["-s"])] = None
-    """Solvers to test (default: scs, clarabel)."""
+    """Solvers to test (default: scs, clarabel, ecos)."""
 
     suite: Suite = Suite.maros
     """Benchmark suite to use."""

@@ -113,7 +113,7 @@ def run_tier(
     from cvxbench.runner import run_single
 
     if solvers is None:
-        solvers = ["scs", "clarabel"]
+        solvers = ["scs", "clarabel", "ecos"]
 
     loader = get_loader(suite)
 
