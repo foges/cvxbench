@@ -19,30 +19,37 @@ from scipy.sparse import SparseEfficiencyWarning
 warnings.filterwarnings("ignore", category=SparseEfficiencyWarning)
 warnings.filterwarnings("ignore", message="Solution may be inaccurate")
 
-# Pre-selected problems by tier (curated for good coverage and speed)
+# Pre-selected problems by tier (curated for good coverage and difficulty progression)
+# Each tier includes a mix of easy, medium, and hard problems
 TIERS = {
-    1: [  # ~1 min, 5 problems - quick sanity check
-        "HS21", "HS35", "HS52", "QAFIRO", "LOTSCHD",
+    1: [  # ~30s, 5 problems - quick sanity check with one medium problem
+        "HS35", "QAFIRO", "LOTSCHD",  # Easy (< 10ms)
+        "CVXQP1_S",                    # Medium (~30ms)
+        "QBRANDY",                     # Hard (~100ms)
     ],
-    2: [  # ~2 min, 10 problems - basic coverage
-        "HS21", "HS35", "HS52", "HS53", "HS76",
-        "QAFIRO", "LOTSCHD", "DPKLO1", "GENHS28", "PRIMAL1",
+    2: [  # ~1 min, 10 problems - basic coverage
+        "HS21", "HS35", "HS52", "QAFIRO", "LOTSCHD",  # Easy
+        "CVXQP1_S", "CVXQP2_S", "DUAL1",              # Medium
+        "QBRANDY", "QSCORPIO",                        # Hard
     ],
-    3: [  # ~5 min, 20 problems - moderate coverage
-        "HS21", "HS35", "HS52", "HS53", "HS76", "HS118", "HS268",
-        "QAFIRO", "LOTSCHD", "DPKLO1", "GENHS28", "PRIMAL1",
-        "DUAL1", "DUAL2", "DUAL4", "DUALC1", "DUALC2",
-        "CVXQP1_S", "CVXQP2_S", "QADLITTL",
+    3: [  # ~2 min, 15 problems - moderate coverage with harder problems
+        "HS21", "HS35", "HS52", "HS76", "QAFIRO", "LOTSCHD",  # Easy
+        "CVXQP1_S", "CVXQP2_S", "DUAL1", "DUAL2", "PRIMAL1",  # Medium
+        "QBRANDY", "QSCORPIO", "KSIP", "QGROW7",              # Hard (100ms - 3s)
     ],
-    4: [  # ~10 min, 35 problems - good coverage
+    4: [  # ~5 min, 25 problems - good coverage including slow problems
+        "HS21", "HS35", "HS52", "HS76", "HS118", "QAFIRO", "LOTSCHD", "DPKLO1",  # Easy
+        "CVXQP1_S", "CVXQP2_S", "CVXQP3_S", "DUAL1", "DUAL2", "DUAL4",          # Medium
+        "PRIMAL1", "PRIMALC2", "PRIMALC5", "DUALC1", "DUALC2",                  # Medium
+        "QBRANDY", "QSCORPIO", "KSIP", "QGROW7", "QSEBA", "PRIMALC1",           # Hard (some take 1-3s)
+    ],
+    5: [  # ~15 min, 40 problems - comprehensive including large problems
         "HS21", "HS35", "HS35MOD", "HS51", "HS52", "HS53", "HS76", "HS118", "HS268",
-        "QAFIRO", "LOTSCHD", "DPKLO1", "GENHS28", "PRIMAL1", "PRIMALC1", "PRIMALC2", "PRIMALC5",
+        "QAFIRO", "LOTSCHD", "DPKLO1", "GENHS28", "QADLITTL",
+        "CVXQP1_S", "CVXQP2_S", "CVXQP3_S", "CVXQP1_M", "CVXQP2_M",
         "DUAL1", "DUAL2", "DUAL3", "DUAL4", "DUALC1", "DUALC2", "DUALC5", "DUALC8",
-        "CVXQP1_S", "CVXQP2_S", "CVXQP3_S", "QADLITTL",
-        "KSIP", "QBRANDY", "QGROW7", "QSCORPIO", "QSEBA", "VALUES",
-    ],
-    5: [  # ~20 min, all small problems (n < 500)
-        None,  # Special marker: load all small problems
+        "PRIMAL1", "PRIMAL2", "PRIMALC1", "PRIMALC2", "PRIMALC5", "PRIMALC8",
+        "QBRANDY", "QSCORPIO", "KSIP", "QGROW7", "QSEBA", "STCQP1", "STCQP2",
     ],
 }
 
