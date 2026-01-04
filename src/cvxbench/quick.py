@@ -98,6 +98,9 @@ def get_loader(suite: str) -> BenchmarkLoader:
     elif suite == "sdplib":
         from cvxbench.loaders.sdplib import SDPLIBLoader
         return SDPLIBLoader()
+    elif suite == "maxcut":
+        from cvxbench.loaders.maxcut import MaxCutLoader
+        return MaxCutLoader()
     else:
         raise ValueError(f"Unknown suite: {suite}")
 
