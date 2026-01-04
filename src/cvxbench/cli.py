@@ -115,7 +115,7 @@ class QuickConfig:
     """Run quick benchmark tiers for rapid feedback."""
 
     tier: Annotated[int, tyro.conf.arg(aliases=["-t"])] = 1
-    """Tier level: 1(~10s), 2(~30s), 3(~2min), 4(~5min), 5(~15min)."""
+    """Tier level: 1(~3s), 2(~5s), 3(~10s), 4(~30s), 5(~2min)."""
 
     solvers: Annotated[list[Solver] | None, tyro.conf.arg(aliases=["-s"])] = None
     """Solvers to test (default: scs, clarabel)."""
