@@ -19,64 +19,65 @@ from scipy.sparse import SparseEfficiencyWarning
 warnings.filterwarnings("ignore", category=SparseEfficiencyWarning)
 warnings.filterwarnings("ignore", message="Solution may be inaccurate")
 
-# Pre-selected problems by tier (curated for coverage)
-# Note: Total time depends heavily on solver. Clarabel typically 10-100x faster than SCS.
-# Times below are wall-clock with default solvers (scs + clarabel running sequentially)
+# Pre-selected problems by tier (curated for coverage and target runtime)
+# Times are targets for running with default solvers (scs + clarabel)
+# Note: CVXQP*_L and CVXQP*_M problems often fail - avoid them
 TIERS = {
-    1: [  # ~3s, 5 problems - quick sanity check
-        "HS35", "QAFIRO", "CVXQP1_S", "DUAL1", "QGROW7",
+    1: [  # ~10s, 8 problems - quick sanity check
+        "HS35", "HS52", "QAFIRO", "LOTSCHD",
+        "CVXQP1_S", "DUAL1",
+        "QGROW7",       # ~3s SCS
+        "CONT-050",     # ~2s SCS
     ],
-    2: [  # ~5s, 10 problems
-        "HS21", "HS35", "HS52", "QAFIRO", "LOTSCHD",
-        "CVXQP1_S", "DUAL1", "QBRANDY", "KSIP", "QGROW7",
+    2: [  # ~30s, 12 problems
+        "HS21", "HS35", "HS52", "HS76", "QAFIRO", "LOTSCHD",
+        "CVXQP1_S", "CVXQP2_S", "DUAL1",
+        "QGROW7", "QGROW15",   # ~9s SCS total
+        "CONT-050",            # ~2s SCS
     ],
-    3: [  # ~10s, 30 problems
+    3: [  # ~2 min, 20 problems
+        # Small (quick)
+        "HS21", "HS35", "HS52", "HS76", "QAFIRO", "LOTSCHD",
+        # Medium
+        "CVXQP1_S", "CVXQP2_S", "CVXQP3_S",
+        "DUAL1", "DUAL2", "PRIMAL1",
+        # Large
+        "QGROW7", "QGROW15", "QGROW22",     # ~18s SCS total
+        "CONT-050", "CONT-100",             # ~45s SCS total
+        "AUG3DQP", "AUG3DCQP",
+        "LISWET1",                          # ~5s SCS
+    ],
+    4: [  # ~5 min, 30 problems
         # Small
-        "HS21", "HS35", "HS52", "HS53", "HS76", "HS118", "HS268",
+        "HS21", "HS35", "HS52", "HS76", "HS118", "QAFIRO", "LOTSCHD", "GENHS28",
+        # Medium
+        "CVXQP1_S", "CVXQP2_S", "CVXQP3_S",
+        "DUAL1", "DUAL2", "DUAL3", "DUAL4",
+        "PRIMAL1", "PRIMALC1", "PRIMALC2",
+        # Large
+        "QGROW7", "QGROW15", "QGROW22",
+        "CONT-050", "CONT-100", "CONT-101",  # CONT-101 ~100s SCS
+        "AUG3DQP", "AUG3DCQP",
+        "LISWET1", "LISWET2",
+        "QSEBA",
+    ],
+    5: [  # ~15 min, 45 problems - comprehensive
+        # Small
+        "HS21", "HS35", "HS52", "HS76", "HS118", "HS268",
         "QAFIRO", "LOTSCHD", "DPKLO1", "GENHS28",
         # Medium
         "CVXQP1_S", "CVXQP2_S", "CVXQP3_S",
         "DUAL1", "DUAL2", "DUAL3", "DUAL4",
-        "PRIMAL1", "PRIMALC2", "PRIMALC5",
-        # Large/Hard (slow for SCS)
-        "QBRANDY", "QSCORPIO", "KSIP", "QGROW7", "QSEBA",
-        "PRIMALC1", "GOULDQP3", "AUG3DQP", "CONT-050",
-    ],
-    4: [  # ~30s, 50 problems
-        # Small
-        "HS21", "HS35", "HS35MOD", "HS51", "HS52", "HS53", "HS76", "HS118", "HS268",
-        "QAFIRO", "LOTSCHD", "DPKLO1", "GENHS28", "QADLITTL",
-        # Medium
-        "CVXQP1_S", "CVXQP2_S", "CVXQP3_S", "CVXQP1_M",
-        "DUAL1", "DUAL2", "DUAL3", "DUAL4",
         "DUALC1", "DUALC2", "DUALC5", "DUALC8",
-        "PRIMAL1", "PRIMAL2", "PRIMALC2", "PRIMALC5",
-        # Large/Hard
-        "QBRANDY", "QSCORPIO", "KSIP", "QGROW7", "QSEBA",
-        "PRIMALC1", "PRIMALC8", "GOULDQP2", "GOULDQP3",
-        "AUG3DQP", "AUG3DCQP", "CONT-050", "CONT-100",
-        "MOSARQP1", "MOSARQP2", "POWELL20", "STADAT1", "STCQP1",
-    ],
-    5: [  # ~2 min, 80 problems - comprehensive
-        # Small
-        "HS21", "HS35", "HS35MOD", "HS51", "HS52", "HS53", "HS76", "HS118", "HS268",
-        "QAFIRO", "LOTSCHD", "DPKLO1", "GENHS28", "QADLITTL", "VALUES",
-        # Medium
-        "CVXQP1_S", "CVXQP2_S", "CVXQP3_S", "CVXQP1_M", "CVXQP2_M", "CVXQP3_M",
-        "DUAL1", "DUAL2", "DUAL3", "DUAL4",
-        "DUALC1", "DUALC2", "DUALC5", "DUALC8",
-        "PRIMAL1", "PRIMAL2", "PRIMAL3", "PRIMAL4",
-        "PRIMALC1", "PRIMALC2", "PRIMALC5", "PRIMALC8",
-        # Large/Hard
-        "QBRANDY", "QSCORPIO", "KSIP", "QGROW7", "QSEBA", "QSHARE1B", "QSHARE2B",
-        "GOULDQP2", "GOULDQP3", "MOSARQP1", "MOSARQP2",
+        "PRIMAL1", "PRIMAL2", "PRIMALC1", "PRIMALC2", "PRIMALC5",
+        # Large
+        "QGROW7", "QGROW15", "QGROW22",
+        "CONT-050", "CONT-100", "CONT-101", "CONT-200", "CONT-201",
         "AUG3D", "AUG3DC", "AUG3DQP", "AUG3DCQP",
-        "CONT-050", "CONT-100", "CONT-101", "CONT-200",
-        "POWELL20", "STADAT1", "STADAT2", "STADAT3",
-        "STCQP1", "STCQP2", "TAME", "UBH1",
-        "CVXQP1_L", "CVXQP2_L", "CVXQP3_L",
         "LISWET1", "LISWET2", "LISWET3", "LISWET4",
-        "QGROW15", "QGROW22", "QSC205", "QSCAGR7", "QSCAGR25",
+        "QSEBA", "QSCSD1",
+        "STADAT1", "STADAT2", "STADAT3",
+        "STCQP1", "STCQP2",
     ],
 }
 
