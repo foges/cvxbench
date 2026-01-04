@@ -35,8 +35,9 @@ dev = [
     "ruff>=0.2",
 ]
 
-[tool.uv.sources]
-minix = { path = "../minix/solver-py", editable = true }
+# For local development with minix, add this to your pyproject.toml:
+# [tool.uv.sources]
+# minix = { path = "../minix/solver-py", editable = true }
 
 [project.scripts]
 cvxbench = "cvxbench.cli:main"
