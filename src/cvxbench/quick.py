@@ -95,6 +95,9 @@ def get_loader(suite: str) -> BenchmarkLoader:
     elif suite == "smp":
         from cvxbench.loaders.smp import SMPLoader
         return SMPLoader()
+    elif suite == "sdplib":
+        from cvxbench.loaders.sdplib import SDPLIBLoader
+        return SDPLIBLoader()
     else:
         raise ValueError(f"Unknown suite: {suite}")
 

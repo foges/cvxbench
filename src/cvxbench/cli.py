@@ -29,6 +29,7 @@ class Suite(str, Enum):
 
     maros = "maros"
     smp = "smp"
+    sdplib = "sdplib"
     # qplib = "qplib"
     # miplib = "miplib"
 

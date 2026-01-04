@@ -22,6 +22,10 @@ def get_loader(suite_name: str) -> BenchmarkLoader:
         from cvxbench.loaders.smp import SMPLoader
 
         return SMPLoader()
+    elif suite_name == "sdplib":
+        from cvxbench.loaders.sdplib import SDPLIBLoader
+
+        return SDPLIBLoader()
     else:
         msg = f"Unknown suite: {suite_name}"
         raise ValueError(msg)
@@ -316,10 +320,18 @@ def build_cvxpy_problem(problem: BenchmarkProblem) -> tuple[cp.Problem, cp.Varia
             u = s[1:]
             constraints.append(cp.norm(u, 2) <= t)
         elif cone_type == "psd":
-            # PSD cone: s in S_+
-            # s = b - Ax is a symmetric matrix (in svec form)
-            # For simplicity, skip PSD constraints for now
-            pass
+            # PSD cone: the variable in this block must be PSD
+            # For vectorized form, s = b - Ax where s reshapes to n x n PSD matrix
+            # We need: b - Ax reshaped to matrix is PSD
+            n_mat = int(np.sqrt(cone_dim))
+            if n_mat * n_mat != cone_dim:
+                msg = f"PSD cone dim {cone_dim} is not a perfect square"
+                raise ValueError(msg)
+
+            # s = b - Ax, s reshaped to n x n must be PSD
+            s = b_block - A_block @ x
+            S = cp.reshape(s, (n_mat, n_mat))
+            constraints.append(S >> 0)  # PSD constraint
         elif cone_type == "exp":
             # Exponential cone
             # For simplicity, skip exp constraints for now
