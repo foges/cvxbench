@@ -128,12 +128,27 @@ wheels = [
 ]
 
 [[package]]
-name = "certifi"
-version = "2025.11.12"
+name = "celery-redbeat"
+version = "2.3.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a2/8c/58f469717fa48465e4a50c014a0400602d3c437d7c0c468e17ada824da3a/certifi-2025.11.12.tar.gz", hash = "sha256:d8ab5478f2ecd78af242878415affce761ca6bc54a22a27e026d7c25357c3316", size = 160538, upload-time = "2025-11-12T02:54:51.517Z" }
+dependencies = [
+    { name = "celery" },
+    { name = "python-dateutil" },
+    { name = "redis" },
+    { name = "tenacity" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7d/d5/cebf6a03a4716ae33315ce1dad68f2465ea30491a560293ecd2a4ad3148a/celery_redbeat-2.3.3.tar.gz", hash = "sha256:f52664b490b2923a787d9f348f291243601430bf8ec383b6e79870a1731ee92a", size = 34429, upload-time = "2025-07-02T13:08:55.251Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/70/7d/9bc192684cea499815ff478dfcdc13835ddf401365057044fb721ec6bddb/certifi-2025.11.12-py3-none-any.whl", hash = "sha256:97de8790030bbd5c2d96b7ec782fc2f7820ef8dba6db909ccf95449f2d062d4b", size = 159438, upload-time = "2025-11-12T02:54:49.735Z" },
+    { url = "https://files.pythonhosted.org/packages/26/c1/ea03e5c737b4b0f4054001d8db64bec693b1506cbb68f93ebecd710b2785/celery_redbeat-2.3.3-py2.py3-none-any.whl", hash = "sha256:0d6da101c46c0147b88f3ae2bfaed42548545934263a31d325a8b0e6585c3fb1", size = 14674, upload-time = "2025-07-02T13:08:54.062Z" },
+]
+
+[[package]]
+name = "certifi"
+version = "2026.1.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e0/2d/a891ca51311197f6ad14a7ef42e2399f36cf2f9bd44752b3dc4eab60fdc5/certifi-2026.1.4.tar.gz", hash = "sha256:ac726dd470482006e014ad384921ed6438c457018f4b3d204aea4281258b2120", size = 154268, upload-time = "2026-01-04T02:42:41.825Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e6/ad/3cc14f097111b4de0040c83a525973216457bbeeb63739ef1ed275c1c021/certifi-2026.1.4-py3-none-any.whl", hash = "sha256:9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c", size = 152900, upload-time = "2026-01-04T02:42:40.15Z" },
 ]
 
 [[package]]
@@ -660,21 +675,23 @@ wheels = [
 
 [[package]]
 name = "minix"
-version = "0.1.0"
+version = "0.1.33"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiokafka" },
     { name = "boto3" },
     { name = "celery" },
+    { name = "celery-redbeat" },
     { name = "dotenv" },
     { name = "fastapi" },
     { name = "pymysql" },
+    { name = "redis" },
     { name = "sqlalchemy" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/37/5e/231356fa0174907300415e0250cb747cbf87f1ab5eb5bc890afd5b4241db/minix-0.1.0.tar.gz", hash = "sha256:d9e0c00b19af602f2b7e578ddab44574f3a74723532262ec17fcbf50836d472b", size = 10462, upload-time = "2025-07-25T20:39:06.506Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/12/e6d9d9cad88af5c87f5de79d0fc1b0662c6774086671914085997826a42b/minix-0.1.33.tar.gz", hash = "sha256:ea6da8d57267fe3d80a8c9fb2541bf0fd1b3f9f8e19df784777be90040ec9f65", size = 22646, upload-time = "2025-12-29T09:15:38.514Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/53/5b921f5f5e277754d773075745aae4b1eee3a7c6a5fba5c7e5f4b8e7940b/minix-0.1.0-py3-none-any.whl", hash = "sha256:76af1b2ee7fca7194ac8814595c74f5ca3baca2aeced820ff416ce0c51e34d6d", size = 24570, upload-time = "2025-07-25T20:39:04.999Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/04/c5ead6babaf4aa8e831caa374e7aa2f4b6827b26af1de455432018a955da/minix-0.1.33-py3-none-any.whl", hash = "sha256:03e5444f248db89c8fd8c79dab7dcd8f1628706c60cb2b08cd0f211f932f717a", size = 35537, upload-time = "2025-12-29T09:15:37.441Z" },
 ]
 
 [[package]]
@@ -1011,6 +1028,15 @@ wheels = [
 ]
 
 [[package]]
+name = "redis"
+version = "4.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/73/88/63d802c2b18dd9eaa5b846cbf18917c6b2882f20efda398cc16a7500b02c/redis-4.6.0.tar.gz", hash = "sha256:585dc516b9eb042a619ef0a39c3d7d55fe81bdb4df09a52c9cdde0d07bf1aa7d", size = 4561721, upload-time = "2023-06-25T13:13:57.139Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/20/2e/409703d645363352a20c944f5d119bdae3eb3034051a53724a7c5fee12b8/redis-4.6.0-py3-none-any.whl", hash = "sha256:e2b03db868160ee4591de3cb90d40ebb50a90dd302138775937f6a42b7ed183c", size = 241149, upload-time = "2023-06-25T13:13:54.563Z" },
+]
+
+[[package]]
 name = "requests"
 version = "2.32.5"
 source = { registry = "https://pypi.org/simple" }
@@ -1195,6 +1221,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a7/a5/d6f429d43394057b67a6b5bbe6eae2f77a6bf7459d961fdb224bf206eee6/starlette-0.48.0.tar.gz", hash = "sha256:7e8cee469a8ab2352911528110ce9088fdc6a37d9876926e73da7ce4aa4c7a46", size = 2652949, upload-time = "2025-09-13T08:41:05.699Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/be/72/2db2f49247d0a18b4f1bb9a5a39a0162869acf235f3a96418363947b3d46/starlette-0.48.0-py3-none-any.whl", hash = "sha256:0764ca97b097582558ecb498132ed0c7d942f233f365b86ba37770e026510659", size = 73736, upload-time = "2025-09-13T08:41:03.869Z" },
+]
+
+[[package]]
+name = "tenacity"
+version = "9.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/d4/2b0cd0fe285e14b36db076e78c93766ff1d529d70408bd1d2a5a84f1d929/tenacity-9.1.2.tar.gz", hash = "sha256:1169d376c297e7de388d18b4481760d478b0e99a777cad3a9c86e556f4b697cb", size = 48036, upload-time = "2025-04-02T08:25:09.966Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/30/643397144bfbfec6f6ef821f36f33e57d35946c44a2352d3c9f0ae847619/tenacity-9.1.2-py3-none-any.whl", hash = "sha256:f77bf36710d8b73a50b2dd155c97b870017ad21afe6ab300326b0371b3b05138", size = 28248, upload-time = "2025-04-02T08:25:07.678Z" },
 ]
 
 [[package]]
