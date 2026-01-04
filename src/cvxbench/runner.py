@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 import cvxpy as cp
 import numpy as np
@@ -12,9 +10,6 @@ from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeEl
 
 from cvxbench.loaders.base import BenchmarkLoader, BenchmarkProblem
 from cvxbench.results import SolveResult
-
-if TYPE_CHECKING:
-    pass
 
 
 def get_loader(suite_name: str) -> BenchmarkLoader:
@@ -149,10 +144,8 @@ def run_single(
 
         # Solve with timing
         # Build solver options based on solver type
-        solver_opts: dict = {}
-        if solver_name == "scs":
-            solver_opts["max_iters"] = 100000
-        elif solver_name == "ecos":
+        solver_opts: dict[str, object] = {}
+        if solver_name in ("scs", "ecos"):
             solver_opts["max_iters"] = 100000
 
         start_time = time.perf_counter()

@@ -12,7 +12,6 @@ import io
 import re
 import zipfile
 from pathlib import Path
-from typing import TextIO
 
 import numpy as np
 import requests
@@ -176,7 +175,7 @@ class SMPLoader(BenchmarkLoader):
 
     def _parse_smp_yaml(self, name: str, path: Path) -> BenchmarkProblem:
         """Parse an SMP YAML file into a BenchmarkProblem."""
-        with open(path, "r") as f:
+        with open(path) as f:
             return parse_smp(name, f.read(), source=self.name())
 
 
@@ -268,12 +267,12 @@ def parse_smp(name: str, content: str, source: str = "smp") -> BenchmarkProblem:
 
     # Build conic form
     # Convert to: A_conic @ x + s = b_conic, s in K
-    constraint_blocks = []
-    b_blocks = []
+    constraint_blocks: list[sparse.spmatrix] = []
+    b_blocks: list[np.ndarray] = []
     cones: list[tuple[str, int]] = []
 
     # Equality constraints: A x = b => A x + s = b, s in zero cone
-    if A_eq is not None and n_eq > 0:
+    if A_eq is not None and b_eq is not None and n_eq > 0:
         constraint_blocks.append(A_eq)
         b_blocks.append(b_eq)
         cones.append(("zero", n_eq))
@@ -395,10 +394,10 @@ def _parse_matrix_market(content: str) -> sparse.csc_matrix | None:
             # This is the dimension line
             parts = line.split()
             if is_coordinate:
-                m, n, nnz = int(parts[0]), int(parts[1]), int(parts[2])
+                m, n, _ = int(parts[0]), int(parts[1]), int(parts[2])  # nnz
             else:
                 m, n = int(parts[0]), int(parts[1])
-                nnz = m * n
+                _ = m * n  # nnz not used for dense format
             data_start = i + 1
             break
         else:

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import random
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 from scipy import sparse
@@ -49,7 +49,7 @@ class BenchmarkProblem:
     has_integer_vars: bool = False
 
     # Additional metadata
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Validate problem dimensions."""

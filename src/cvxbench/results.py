@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -77,7 +77,7 @@ def shifted_geometric_mean(times: list[float], shift: float = 1.0) -> float:
     return math.exp(log_mean) - shift
 
 
-def compute_summary_stats(results: list[SolveResult], solver: str) -> dict:
+def compute_summary_stats(results: list[SolveResult], solver: str) -> dict[str, Any]:
     """Compute summary statistics for a solver.
 
     Args:
@@ -95,7 +95,7 @@ def compute_summary_stats(results: list[SolveResult], solver: str) -> dict:
     failures = [r for r in solver_results if not r.is_success]
     success_times = [r.time_sec for r in successes]
 
-    stats = {
+    stats: dict[str, Any] = {
         "total": len(solver_results),
         "success": len(successes),
         "failure": len(failures),
@@ -120,8 +120,12 @@ def compute_summary_stats(results: list[SolveResult], solver: str) -> dict:
     # Validation statistics
     validated = [r for r in successes if r.is_validated]
     if validated:
-        primal_residuals = [r.primal_residual for r in validated if r.primal_residual is not None]
-        constraint_viols = [r.constraint_violation for r in validated if r.constraint_violation is not None]
+        primal_residuals = [
+            r.primal_residual for r in validated if r.primal_residual is not None
+        ]
+        constraint_viols = [
+            r.constraint_violation for r in validated if r.constraint_violation is not None
+        ]
 
         stats["validated"] = len(validated)
         stats["max_primal_res"] = max(primal_residuals) if primal_residuals else None
@@ -238,7 +242,10 @@ def display_summary(results: list[SolveResult], console: Console) -> None:
 
         # Show at most 10 failures
         for r in failures[:10]:
-            error_msg = r.error_message[:50] + "..." if r.error_message and len(r.error_message) > 50 else (r.error_message or "—")
+            if r.error_message and len(r.error_message) > 50:
+                error_msg = r.error_message[:50] + "..."
+            else:
+                error_msg = r.error_message or "—"
             failure_table.add_row(r.problem, r.solver, r.status, error_msg)
 
         if len(failures) > 10:
@@ -299,7 +306,10 @@ def _display_performance_comparison(
         problem_times = {}
         for solver in solvers:
             r = next(
-                (r for r in results if r.problem == problem and r.solver == solver and r.is_success),
+                (
+                    r for r in results
+                    if r.problem == problem and r.solver == solver and r.is_success
+                ),
                 None,
             )
             if r:

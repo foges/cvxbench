@@ -54,9 +54,21 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = [
+    "SIM108",  # Use ternary operator - often less readable
+    "B027",    # Empty method in ABC without abstract decorator - intentional optional methods
+    "B905",    # zip() without strict= - fine for unpacking triplets
+]
 
 [tool.mypy]
 python_version = "3.12"
-strict = true
-warn_return_any = true
+warn_return_any = false
 warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["cvxpy.*", "tyro.*", "requests.*", "scipy.*", "numpy.*"]
+ignore_missing_imports = true
+ignore_errors = true

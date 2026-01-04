@@ -8,7 +8,6 @@ Reference: https://github.com/qpsolvers/maros_meszaros_qpbenchmark
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import TextIO
 
@@ -83,7 +82,7 @@ class MarosMeszarosLoader(BenchmarkLoader):
 
     def _parse_sif(self, name: str, path: Path) -> BenchmarkProblem:
         """Parse a SIF/QPS file into a BenchmarkProblem."""
-        with open(path, "r") as f:
+        with open(path) as f:
             return parse_qps(name, f, source=self.name())
 
 

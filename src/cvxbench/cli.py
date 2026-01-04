@@ -9,7 +9,7 @@ from typing import Annotated
 
 import tyro
 
-from cvxbench.results import display_summary
+from cvxbench.results import SolveResult, display_summary
 from cvxbench.runner import run_benchmarks
 
 
@@ -132,7 +132,7 @@ class QuickConfig:
 
 def main() -> None:
     """Main entry point for the CLI."""
-    config = tyro.cli(
+    config = tyro.cli(  # type: ignore[call-overload]
         Annotated[RunConfig, tyro.conf.subcommand("run", default=True)]
         | Annotated[QuickConfig, tyro.conf.subcommand("quick")]
         | Annotated[ListSuitesConfig, tyro.conf.subcommand("list-suites")]
@@ -167,7 +167,7 @@ def _run_benchmarks(config: RunConfig) -> None:
     solver_names = [s.value for s in config.solvers]
     suite_names = [s.value for s in config.suites]
 
-    console.print(f"[bold]CVXBench[/bold] - Convex Optimization Benchmark")
+    console.print("[bold]CVXBench[/bold] - Convex Optimization Benchmark")
     console.print(f"Solvers: {', '.join(solver_names)}")
     console.print(f"Suites: {', '.join(suite_names)}")
     console.print(f"Sample rate: {config.sample * 100:.1f}%")
@@ -296,8 +296,8 @@ def _download_suite(config: DownloadConfig) -> None:
     if suite_name == "maros":
         from cvxbench.loaders.maros_meszaros import MarosMeszarosLoader
 
-        loader = MarosMeszarosLoader()
-        problems = loader.list_problems()
+        maros_loader = MarosMeszarosLoader()
+        problems = maros_loader.list_problems()
 
         from rich.progress import Progress
 
@@ -305,29 +305,28 @@ def _download_suite(config: DownloadConfig) -> None:
             task = progress.add_task("Downloading...", total=len(problems))
             for name in problems:
                 try:
-                    loader.load_problem(name)
+                    maros_loader.load_problem(name)
                 except Exception as e:
                     console.print(f"[yellow]Warning: Failed to download {name}: {e}[/yellow]")
                 progress.update(task, advance=1)
 
-        console.print(f"[green]Downloaded {len(problems)} problems to {loader.cache_dir}[/green]")
+        console.print(f"[green]Downloaded {len(problems)} to {maros_loader.cache_dir}[/green]")
     elif suite_name == "smp":
         from cvxbench.loaders.smp import SMPLoader
 
-        loader = SMPLoader()
+        smp_loader = SMPLoader()
         console.print("Downloading SMP problems from Google Drive...")
-        loader.ensure_downloaded()
-        problems = loader.list_problems()
-        console.print(f"[green]Downloaded {len(problems)} problems to {loader.cache_dir}[/green]")
+        smp_loader.ensure_downloaded()
+        problems = smp_loader.list_problems()
+        console.print(f"[green]Downloaded {len(problems)} to {smp_loader.cache_dir}[/green]")
     else:
         console.print(f"[red]Suite {suite_name} not yet implemented[/red]")
 
 
-def _save_results(results: list, output: Path) -> None:
+def _save_results(results: list[SolveResult], output: Path) -> None:
     """Save results to file."""
     import json
 
-    from cvxbench.results import SolveResult
 
     if output.suffix == ".json":
         data = [

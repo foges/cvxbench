@@ -8,12 +8,17 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import math
 import sys
-import argparse
 import warnings
+from typing import TYPE_CHECKING
 
 from scipy.sparse import SparseEfficiencyWarning
+
+if TYPE_CHECKING:
+    from cvxbench.loaders.base import BenchmarkLoader
+    from cvxbench.results import SolveResult
 
 # Suppress noisy warnings during benchmarks
 warnings.filterwarnings("ignore", category=SparseEfficiencyWarning)
@@ -82,7 +87,7 @@ TIERS = {
 }
 
 
-def get_loader(suite: str):
+def get_loader(suite: str) -> BenchmarkLoader:
     """Get the appropriate loader for a suite."""
     if suite == "maros":
         from cvxbench.loaders.maros_meszaros import MarosMeszarosLoader
@@ -155,8 +160,8 @@ def run_tier(
     print("-" * len(header))
     sys.stdout.flush()
 
-    results = {s: [] for s in solvers}
-    all_results = []
+    results: dict[str, list[float]] = {s: [] for s in solvers}
+    all_results: list[SolveResult] = []
     wins = {s: 0 for s in solvers}
     failed = {s: 0 for s in solvers}
     inaccurate = {s: 0 for s in solvers}
@@ -188,8 +193,9 @@ def run_tier(
                 failed[solver] += 1
 
         # Find winner among optimal solutions
-        optimal = {s: t for s, t in times.items() if statuses[s] in ("optimal", "optimal_inaccurate")}
-        winner = min(optimal, key=optimal.get) if optimal else "-"
+        ok_statuses = ("optimal", "optimal_inaccurate")
+        optimal = {s: t for s, t in times.items() if statuses[s] in ok_statuses}
+        winner = min(optimal, key=lambda s: optimal[s]) if optimal else "-"
         if winner != "-":
             wins[winner] += 1
 
@@ -200,12 +206,13 @@ def run_tier(
             # Determine marker
             if statuses[s] not in ("optimal", "optimal_inaccurate"):
                 marker = "!"  # Failed
-            elif validate and r.primal_residual is not None and r.primal_residual > 1e-6:
-                marker = "~"  # Poor accuracy
-            elif validate and r.constraint_violation is not None and r.constraint_violation > 1e-6:
-                marker = "~"  # Poor accuracy
             elif statuses[s] == "optimal_inaccurate":
                 marker = "~"  # Solver reported inaccurate
+            elif validate:
+                # Check residuals for poor accuracy
+                poor_primal = r.primal_residual is not None and r.primal_residual > 1e-6
+                poor_constr = r.constraint_violation is not None and r.constraint_violation > 1e-6
+                marker = "~" if (poor_primal or poor_constr) else " "
             else:
                 marker = " "
             line += f" {times[s]:7.1f}{marker}"
@@ -249,8 +256,9 @@ def run_tier(
 
     # Baseline comparison if requested
     if baseline:
-        from cvxbench.baseline import compare_to_baseline, display_comparison, load_baseline
         from rich.console import Console
+
+        from cvxbench.baseline import compare_to_baseline, display_comparison, load_baseline
 
         try:
             bl = load_baseline(baseline)

@@ -43,7 +43,7 @@ class Baseline:
     created: str
     solver: str
     entries: dict[str, BaselineEntry] = field(default_factory=dict)
-    metadata: dict = field(default_factory=dict)
+    metadata: dict[str, str] = field(default_factory=dict)
 
     def add_entry(self, result: SolveResult) -> None:
         """Add a result to the baseline."""
@@ -332,7 +332,8 @@ def display_comparison(report: ComparisonReport, console: Console) -> None:
     status_table.add_column("Count", justify="right")
 
     if report.n_status_improved > 0:
-        status_table.add_row("Improved (fail -> pass)", f"[green]{report.n_status_improved}[/green]")
+        improved = f"[green]{report.n_status_improved}[/green]"
+        status_table.add_row("Improved (fail -> pass)", improved)
     if report.n_status_regressed > 0:
         status_table.add_row("Regressed (pass -> fail)", f"[red]{report.n_status_regressed}[/red]")
 
@@ -345,16 +346,26 @@ def display_comparison(report: ComparisonReport, console: Console) -> None:
     time_table.add_column("Metric", style="cyan")
     time_table.add_column("Value", justify="right")
 
-    ratio_color = "green" if report.time_ratio_geom < 1.0 else ("red" if report.time_ratio_geom > 1.1 else "yellow")
-    time_table.add_row("Geom Mean Ratio", f"[{ratio_color}]{report.time_ratio_geom:.2f}x[/{ratio_color}]")
+    if report.time_ratio_geom < 1.0:
+        ratio_color = "green"
+    elif report.time_ratio_geom > 1.1:
+        ratio_color = "red"
+    else:
+        ratio_color = "yellow"
+    ratio_str = f"[{ratio_color}]{report.time_ratio_geom:.2f}x[/{ratio_color}]"
+    time_table.add_row("Geom Mean Ratio", ratio_str)
     time_table.add_row("Faster (>10%)", f"[green]{report.n_faster}[/green]")
-    time_table.add_row("Slower (>10%)", f"[red]{report.n_slower}[/red]" if report.n_slower > 0 else str(report.n_slower))
+    slower_str = f"[red]{report.n_slower}[/red]" if report.n_slower > 0 else "0"
+    time_table.add_row("Slower (>10%)", slower_str)
     time_table.add_row("Same (±10%)", str(report.n_same))
 
     console.print(time_table)
 
     # Details for notable changes
-    notable = [c for c in report.details if c.status_change != "same" or abs(c.time_ratio - 1.0) > 0.2]
+    notable = [
+        c for c in report.details
+        if c.status_change != "same" or abs(c.time_ratio - 1.0) > 0.2
+    ]
 
     if notable:
         console.print()
