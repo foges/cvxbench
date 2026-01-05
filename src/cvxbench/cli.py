@@ -403,17 +403,9 @@ def _show_baseline(name: str, console: Console) -> None:
     try:
         baseline = load_baseline(name)
         console.print(f"[bold]Baseline: {name}[/bold]")
-        console.print(f"Created: {baseline.get('created', 'unknown')}")
-        console.print(f"Problems: {len(baseline.get('results', []))}")
-
-        # Show solver breakdown
-        solvers: dict[str, int] = {}
-        for r in baseline.get("results", []):
-            solver = r.get("solver", "unknown")
-            solvers[solver] = solvers.get(solver, 0) + 1
-
-        if solvers:
-            console.print(f"Solvers: {', '.join(f'{k}({v})' for k, v in solvers.items())}")
+        console.print(f"Created: {baseline.created}")
+        console.print(f"Solver: {baseline.solver}")
+        console.print(f"Problems: {len(baseline.entries)}")
     except FileNotFoundError:
         _show_baseline_error(name, console)
 
