@@ -16,17 +16,23 @@ uv add cvxbench
 ## Quick Start
 
 ```bash
-# Quick benchmark (tier 1 = ~10s, tier 5 = ~15min)
-cvxbench quick -t 1
+# Run default benchmark (~10s)
+cvxbench bench
+
+# Run medium benchmark (~2min)
+cvxbench bench -t 3
 
 # Compare specific solvers
-cvxbench quick -t 2 -s scs clarabel
+cvxbench bench -s scs clarabel
+
+# Head-to-head comparison
+cvxbench compare scs clarabel
 
 # Full benchmark run
-cvxbench run --sample 0.1 --solvers scs clarabel ecos
+cvxbench bench --full --sample 0.1
 
 # With solution validation
-cvxbench quick -t 2 --validate
+cvxbench bench -t 2 --validate
 ```
 
 ## Example Output
@@ -57,14 +63,16 @@ CONT-050            2597  7595 |  1764.8     99.6    226.2  | clarabel
 - **Quick Benchmarks**: Tiered problem sets for fast feedback during development
 - **Solution Validation**: Verify primal/dual residuals and constraint violations
 - **Baseline Tracking**: Save results and detect regressions
-- **Multiple Suites**: Maros-Mészáros QP, SMP/NASOQ, and more
+- **Multiple Suites**: Maros-Mészáros QP, SMP/NASOQ, SDPLIB, Max-Cut SDP
 
 ## Benchmark Suites
 
 | Suite | Problems | Type | Description |
 |-------|----------|------|-------------|
-| Maros-Mészáros | 138 | QP | Classic QP test set |
-| SMP/NASOQ | 1515 | QP | Graphics/simulation QPs |
+| maros | 138 | QP | Maros-Mészáros classic QP test set |
+| smp | 1515 | QP | SMP/NASOQ graphics/simulation QPs |
+| sdplib | 92 | SDP | SDPLIB semidefinite programs |
+| maxcut | 14 | SDP | Max-Cut SDP relaxations (generated) |
 
 ## Supported Solvers
 
@@ -73,26 +81,34 @@ CONT-050            2597  7595 |  1764.8     99.6    226.2  | clarabel
 | SCS | First-order | ✓ | ✓ | ✓ | ✓ |
 | Clarabel | Interior-point | ✓ | ✓ | ✓ | ✓ |
 | ECOS | Interior-point | ✓ | - | ✓ | - |
+| MINIX | First-order | ✓ | ✓ | ✓ | - |
 
 ## Commands
 
 ```bash
-cvxbench quick          # Quick tiered benchmarks
-cvxbench run            # Full benchmark run
-cvxbench list-suites    # Show available suites
-cvxbench list-solvers   # Show available solvers
-cvxbench download       # Download benchmark data
-cvxbench baselines      # List saved baselines
+cvxbench                    # Show welcome screen with quick start
+cvxbench bench              # Run tiered benchmark (default: tier 1)
+cvxbench bench -t 3         # Run tier 3 benchmark (~2min)
+cvxbench bench --full       # Run full benchmark suite
+cvxbench compare scs minix  # Head-to-head solver comparison
+cvxbench list solvers       # Show available solvers
+cvxbench list suites        # Show benchmark suites
+cvxbench list baselines     # Show saved baselines
+cvxbench download maros     # Download benchmark data
 ```
 
 ## Baseline Tracking
 
 ```bash
-# Save a baseline
-cvxbench run -s clarabel --save-baseline v1.0
+# Save a baseline after full benchmark
+cvxbench bench --full --save v1.0
 
 # Compare against baseline
-cvxbench run -s clarabel --baseline v1.0
+cvxbench bench -t 3 --baseline v1.0
+
+# Manage baselines
+cvxbench baseline show v1.0
+cvxbench baseline delete v1.0
 ```
 
 ## Development
