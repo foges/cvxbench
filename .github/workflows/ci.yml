@@ -55,4 +55,4 @@ jobs:
         run: uv sync
 
       - name: Run quick benchmark (tier 1)
-        run: uv run cvxbench quick -t 1
+        run: uv run cvxbench bench -t 1
